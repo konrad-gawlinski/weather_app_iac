@@ -1,1 +1,3 @@
 .vagrant
+iac/terraform/.terraform
+iac/terraform/terraform.tfstate
