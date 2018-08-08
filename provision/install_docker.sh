@@ -10,4 +10,9 @@ sudo groupadd docker
 sudo usermod -aG docker vagrant
 sudo apt-get update
 sudo apt-get -y install docker-ce
-sudo exec su -l vagrant
+sudo -s exec su -l vagrant
+
+sudo mkdir -p /etc/systemd/system/docker.service.d
+sudo cp /provision/conf/docker/override.conf /etc/systemd/system/docker.service.d/
+sudo systemctl daemon-reload
+sudo systemctl restart docker

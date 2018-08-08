@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   config.vm.synced_folder "./provision", "/provision", disabled:false
   config.vm.synced_folder "./iac", "/iac", disabled:false
-  config.vm.synced_folder "./shared", "/shared", disabled:false
+  config.vm.synced_folder "./app_src", "/var/weather_app", disabled:false
   config.vm.synced_folder ".", '/vagrant', disabled:true
 
   # Provider-specific configuration so you can fine-tune various

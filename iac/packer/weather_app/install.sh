@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+mkdir -p /var/weather_app
+mkdir -p /var/log/php
+
 apt-get update
 apt-get install -y wget ca-certificates apt-transport-https
 wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add -
@@ -10,5 +13,4 @@ apt-get update
 apt-get -y install supervisor nginx
 apt-get -y install php7.2 php7.2-fpm
 
-mkdir -p /var/weather_app
 
