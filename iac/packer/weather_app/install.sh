@@ -11,6 +11,6 @@ echo "deb https://packages.sury.org/php/ jessie main" | tee /etc/apt/sources.lis
 
 apt-get update
 apt-get -y install supervisor nginx
-apt-get -y install php7.2 php7.2-fpm
+apt-get -y install php7.2 php7.2-fpm php7.2-xml php7.2-zip unzip
 
 
