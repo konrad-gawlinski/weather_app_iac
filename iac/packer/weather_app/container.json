@@ -31,7 +31,6 @@
       "source": "./conf/supervisor/",
       "destination": "/etc/supervisor/conf.d"
     }
-
   ],
   "post-processors": [
     {

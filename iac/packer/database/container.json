@@ -1,0 +1,27 @@
+{
+  "builders":[
+    {
+      "type": "docker",
+      "image": "debian:jessie",
+      "commit": true
+    }
+  ],
+  "provisioners":[
+    {
+      "type": "file",
+      "source": "./secure_mysql.sql",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "script": "./install.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "docker-tag",
+      "repository": "private/database"
+    }
+  ]
+}
+

@@ -10,7 +10,5 @@ wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add -
 echo "deb https://packages.sury.org/php/ jessie main" | tee /etc/apt/sources.list.d/php.list
 
 apt-get update
-apt-get -y install supervisor nginx
-apt-get -y install php7.2 php7.2-fpm php7.2-xml php7.2-zip unzip
-
-
+apt-get -y install supervisor nginx mysql-client
+apt-get -y install php7.2 php7.2-fpm php7.2-xml php7.2-mysqli php7.2-zip unzip

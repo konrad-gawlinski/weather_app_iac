@@ -1,0 +1,38 @@
+parameters:
+
+services:
+    App\Commands\:
+        resource: '../src/Commands/*'
+        exclude: '../src/Commands/*Command.php'
+
+    App\Commands\WeatherReport\Executor:
+        arguments:
+            $httpClient: '@httpClient'
+            $responseParser: '@App\Commands\WeatherReport\ResponseParser'
+            $dbGateway: '@databaseGateway'
+
+    App\Commands\WeatherReport\ImportCommand:
+        tags:
+            - { name: 'console.command', command: 'run:import-weather-report' }
+        arguments:
+            $executor: '@App\Commands\WeatherReport\Executor'
+            $settings: '@App\Commands\WeatherReport\Settings'
+            $validator: '@App\Commands\WeatherReport\Validator'
+
+    databaseInitPDO:
+        class: App\Database\PDO
+        arguments:
+            $host: '%env(DBHOST_WEATHER_APP)%'
+            $user: '%env(DBUSER_WEATHER_APP)%'
+            $pass: '%env(DBPASS_WEATHER_APP)%'
+            $database: ''
+
+    App\Commands\DatabaseInit\Executor:
+        arguments:
+            $pdo: '@databaseInitPDO'
+
+    App\Commands\DatabaseInit\InitAppCommand:
+        tags:
+        - { name: 'console.command', command: 'run:init-app-database' }
+        arguments:
+            $executor: '@App\Commands\DatabaseInit\Executor'

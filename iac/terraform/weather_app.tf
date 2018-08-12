@@ -10,7 +10,6 @@ resource "docker_network" "private_network" {
 resource "docker_container" "weather_app" {
   image = "private/weather_app:latest"
   name  = "working_weather_app"
-  hostname = "working_weather_app.dev"
   ports {
     internal = 80
     external = 80
@@ -21,4 +20,15 @@ resource "docker_container" "weather_app" {
   }
   networks = ["${docker_network.private_network.id}"]
   command = ["supervisord", "-n"]
+}
+
+resource "docker_container" "weather_app_database" {
+  image = "private/database:latest"
+  name  = "weather_app_database"
+  ports {
+    internal = 3306
+    external = 3306
+  }
+  networks = ["${docker_network.private_network.id}"]
+  command = ["mysqld_safe"]
 }

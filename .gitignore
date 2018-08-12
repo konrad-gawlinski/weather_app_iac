@@ -1,5 +1,5 @@
 .vagrant
 iac/terraform/.terraform
-iac/terraform/terraform.tfstate
+iac/terraform/terraform.tfstate*
 app_src/var
 app_src/vendor
