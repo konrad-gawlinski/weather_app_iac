@@ -6,18 +6,19 @@ services:
         exclude: '../src/Commands/*Command.php'
 
     App\Commands\WeatherReport\Executor:
-        arguments:
-            $httpClient: '@httpClient'
-            $responseParser: '@App\Commands\WeatherReport\ResponseParser'
-            $dbGateway: '@databaseGateway'
+        calls:
+            - [setHttpClient, ['@httpClient']]
+            - [setResponseParser, ['@App\Commands\WeatherReport\ResponseParser']]
+            - [setDatabaseGateway, ['@databaseGateway']]
 
     App\Commands\WeatherReport\ImportCommand:
         tags:
             - { name: 'console.command', command: 'run:import-weather-report' }
-        arguments:
-            $executor: '@App\Commands\WeatherReport\Executor'
-            $settings: '@App\Commands\WeatherReport\Settings'
-            $validator: '@App\Commands\WeatherReport\Validator'
+        calls:
+            - [setExecutor, ['@App\Commands\WeatherReport\Executor']]
+            - [setSettings, ['@App\Commands\WeatherReport\Settings']]
+            - [setValidator, ['@App\Commands\WeatherReport\Validator']]
+            - [setRegionUtils, ['@App\Commands\WeatherReport\RegionUtils']]
 
     databaseInitPDO:
         class: App\Database\PDO

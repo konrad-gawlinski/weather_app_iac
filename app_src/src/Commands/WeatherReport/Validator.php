@@ -22,12 +22,10 @@ class Validator
     $country = $input->getArgument(ImportCommand::COUNTRY_ARGUMENT);
     $city = $input->getArgument(ImportCommand::CITY_ARGUMENT);
 
-    if (!isset($this->validRegions[$country])) {
+    if ($country && !isset($this->validRegions[$country])) {
       $errorMessages[] = $this->getErrorMessage(self::ERR_INVALID_COUNTRY);
-    } else {
-      if (!in_array($city, $this->validRegions[$country])) {
+    } else if ($city && !in_array($city, $this->validRegions[$country])) {
         $errorMessages[] = $this->getErrorMessage(self::ERR_INVALID_CITY);
-      }
     }
 
     return $errorMessages;

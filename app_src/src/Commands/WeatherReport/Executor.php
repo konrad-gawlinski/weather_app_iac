@@ -3,7 +3,6 @@
 namespace App\Commands\WeatherReport;
 
 use App\Database\Exception as DBException;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use GuzzleHttp\Client as HttpClient;
 use App\Database\Gateway as DBGateway;
@@ -21,23 +20,30 @@ class Executor
   /** @var DBGateway */
   private $dbGateway;
 
-  public function __construct(HttpClient $httpClient, ResponseParser $responseParser, DBGateway $dbGateway)
+  public function setHttpClient(HttpClient $httpClient)
   {
     $this->httpClient = $httpClient;
-    $this->dbGateway = $dbGateway;
+  }
+
+  public function setResponseParser(ResponseParser $responseParser)
+  {
     $this->responseParser = $responseParser;
   }
 
-  public function execute(InputInterface $input, OutputInterface $output)
+  public function setDatabaseGateway(DBGateway $dbGateway)
   {
-    $country = $input->getArgument(ImportCommand::COUNTRY_ARGUMENT);
-    $city = $input->getArgument(ImportCommand::CITY_ARGUMENT);
+    $this->dbGateway = $dbGateway;
+  }
 
-    $output->writeln('Running import for following region: ' . "{$country}/{$city}");
-
+  public function execute(OutputInterface $output, array $regionPairs)
+  {
     try {
-      $totalInsertedEntries = $this->importReport($country, $city);
-      $output->writeln("Total inserted rows: [{$totalInsertedEntries}]");
+      foreach ($regionPairs as $region) {
+        list($country, $city) = $region;
+        $output->writeln('Running import for following region: ' . "{$country}/{$city}");
+        $totalInsertedEntries = $this->importReport($country, $city);
+        $output->writeln("Total inserted rows: [{$totalInsertedEntries}]");
+      }
     } catch (DBException $e) {
       $this->dbGateway->rollbackTransaction();
       $output->writeln('Database error: ' . $e->getMessage());

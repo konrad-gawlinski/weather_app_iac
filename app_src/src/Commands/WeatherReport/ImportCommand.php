@@ -21,12 +21,27 @@ class ImportCommand extends Command
   /** @var Validator */
   private $validator;
 
-  public function __construct(Executor $executor, Settings $settings, Validator $validator)
+  /** @var RegionUtils */
+  private $regionUtils;
+
+  public function setExecutor(Executor $executor)
   {
-    parent::__construct();
     $this->executor = $executor;
+  }
+
+  public function setSettings(Settings $settings)
+  {
     $this->settings = $settings;
+  }
+
+  public function setValidator(Validator $validator)
+  {
     $this->validator = $validator;
+  }
+
+  public function setRegionUtils(RegionUtils $regionUtils)
+  {
+    $this->regionUtils = $regionUtils;
   }
 
   protected function configure()
@@ -37,19 +52,24 @@ class ImportCommand extends Command
     ;
 
     $this
-      ->addArgument(self::COUNTRY_ARGUMENT, InputArgument::REQUIRED, 'Country')
-      ->addArgument(self::CITY_ARGUMENT, InputArgument::REQUIRED, 'City')
+      ->addArgument(self::COUNTRY_ARGUMENT, InputArgument::OPTIONAL, 'Country')
+      ->addArgument(self::CITY_ARGUMENT, InputArgument::OPTIONAL, 'City')
     ;
   }
 
   protected function execute(InputInterface $input, OutputInterface $output)
   {
-    $this->validator->setValidRegions($this->settings->getAllowedRegions());
+    $validRegions = $this->settings->getAllowedRegions();
+    $this->validator->setValidRegions($validRegions);
     $errors = $this->validator->validate($input);
     if ($errors) {
       $this->outputErrors($errors, $output);
     } else {
-      $this->executor->execute($input, $output);
+      $country = $input->getArgument(ImportCommand::COUNTRY_ARGUMENT) ?: '';
+      $city = $input->getArgument(ImportCommand::CITY_ARGUMENT) ?: '';
+
+      $regionPairs = $this->regionUtils->getRegionPairs($country, $city, $validRegions);
+      $this->executor->execute($output, $regionPairs);
     }
   }
 

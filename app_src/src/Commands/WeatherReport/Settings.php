@@ -7,9 +7,12 @@ class Settings
   public function getAllowedRegions()
   {
     return [
-      'all' => ['all'],
-      'DE' => ['Berlin'],
-      'ES' => ['Madrid']
+      'DE' => ['Berlin', 'Dusseldorf'],
+      'AT' => ['Vienna'],
+      'ES' => ['Madrid'],
+      'NL' => ['Amsterdam'],
+      'PL' => ['Warsaw'],
+      'UK' => ['London'],
     ];
   }
 }
