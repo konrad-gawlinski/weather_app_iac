@@ -23,7 +23,7 @@ services:
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
     App\Controller\:
-        resource: '../src/Controller'
+        resource: '../src/Controller/*'
         tags: ['controller.service_arguments']
 
     httpClient:
@@ -41,6 +41,12 @@ services:
         class: App\Database\Gateway
         arguments:
             $pdo: '@databasePDO'
+
+    App\Controller\WeatherReport:
+        tags: ['controller.service_arguments']
+        bind:
+            $request: '@request_stack'
+            $gateway: '@databaseGateway'
 
 imports:
     - { resource: commands.yaml }

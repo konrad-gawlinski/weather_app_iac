@@ -12,12 +12,6 @@ class Index
    */
   function index()
   {
-    $dsn = 'mysql:dbname=;host=weather_app_database';
-    $user = 'weatherman';
-    $password = 'admin';
-
-      $dbh = new \PDO($dsn, $user, $password);
-//    $dbConn = new \mysqli("weather_app_database", "weatherman", "admin", "");
     return new JsonResponse([
       'hello' => 'world!'
     ]);

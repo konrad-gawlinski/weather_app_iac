@@ -4,6 +4,10 @@ namespace App\Database;
 
 class Gateway extends BaseGateway
 {
+  const CRITERIA_START_DATE = 'start_date';
+  const CRITERIA_END_DATE = 'end_date';
+  const CRITERIA_CITY_ID = 'city_id';
+
   /**
    * @throws Exception
    */
@@ -76,5 +80,36 @@ class Gateway extends BaseGateway
     }
 
     return substr($valuesListQuery, 0, -1);
+  }
+
+  public function fetchReportData(array $criteria = [])
+  {
+    $df = $this->getDefinitionMap();
+
+    $query = 'SELECT data.%datetimeColumn, region.%countryColumn, region.%cityColumn, data.%tempColumn
+      FROM %regionTable region JOIN %dataTable data ON region.id = data.region_id';
+    $query = str_replace(array_keys($df), array_values($df), $query);
+
+    $stmt = $this->pdo()->prepare($query);
+    $isSuccess = $stmt->execute();
+
+    if (!$isSuccess) return [];
+
+    $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    if ($result === false) return [];
+
+    return $result;
+  }
+
+  private function getDefinitionMap() : array
+  {
+    return [
+      '%regionTable' => Definition::TABLE_REGION,
+      '%dataTable' => Definition::TABLE_DATA,
+      '%datetimeColumn' => Definition::DATA_DATETIME,
+      '%countryColumn' => Definition::REGION_COUNTRY,
+      '%cityColumn' => Definition::REGION_CITY,
+      '%tempColumn' => Definition::DATA_TEMP
+    ];
   }
 }
