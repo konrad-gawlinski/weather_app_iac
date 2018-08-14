@@ -1,0 +1,6 @@
+no tests
+prevent inserting the same weather data twice
+split application_source, infrastructure code, secure application properties to different repos
+using ORM is an alternative
+
+working time: 3,5MD

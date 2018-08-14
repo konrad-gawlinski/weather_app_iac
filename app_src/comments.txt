@@ -1,5 +1,0 @@
-terraform remote_exec did not work
-no tests
-prevent inserting the same weather data twice
-
-working time: 3MD
