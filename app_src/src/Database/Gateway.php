@@ -4,19 +4,25 @@ namespace App\Database;
 
 class Gateway extends BaseGateway
 {
-  const CRITERIA_START_DATE = 'start_date';
-  const CRITERIA_END_DATE = 'end_date';
-  const CRITERIA_CITY_ID = 'city_id';
+  /** @var CriteriaQueryBuilder */
+  private $criteriaQueryBuilder;
+
+  public function setCriteriaQueryBuilder(CriteriaQueryBuilder $builder)
+  {
+    $this->criteriaQueryBuilder = $builder;
+  }
 
   /**
    * @throws Exception
    */
   public function insertRegion(string $timezone, string $country, string $city)
   {
-    $query = sprintf('INSERT IGNORE INTO %1$s (%2$s, %3$s, %4$s) VALUES (?, ?, ?)',
-      Definition::TABLE_REGION,
-      Definition::REGION_TIMEZONE, Definition::REGION_COUNTRY, Definition::REGION_CITY
-    );
+    $df = $this->getDefinitionMap();
+    $query = '
+      INSERT IGNORE INTO %regionTable (%timezoneColumn, %countryColumn, %cityColumn)
+        VALUES (?, ?, ?);
+    ';
+    $query = str_replace(array_keys($df), array_values($df), $query);
 
     $stmt = $this->pdo()->prepare($query);
     $isSuccess = $stmt->execute([$timezone, $country, $city]);
@@ -29,10 +35,11 @@ class Gateway extends BaseGateway
    */
   public function fetchRegion(string $country, string $city) : array
   {
-    $query = sprintf('SELECT * FROM %1$s WHERE %2$s = ? AND %3$s = ?',
-      Definition::TABLE_REGION,
-      Definition::REGION_COUNTRY, Definition::REGION_CITY
-    );
+    $df = $this->getDefinitionMap();
+    $query = '
+      SELECT * FROM %regionTable WHERE %countryColumn = ? AND %cityColumn = ?;
+    ';
+    $query = str_replace(array_keys($df), array_values($df), $query);
 
     $stmt = $this->pdo()->prepare($query);
     $isSuccess = $stmt->execute([$country, $city]);
@@ -55,12 +62,13 @@ class Gateway extends BaseGateway
 
     $regionId = intval($region[Definition::REGION_ID]);
     $valuesListQuery = $this->prepareDataInsertValuesList($regionId, $dataCollection);
-    $query = sprintf('INSERT IGNORE INTO %1$s (%2$s, %3$s, %4$s, %5$s, %6$s) VALUES %7$s',
-      Definition::TABLE_DATA,
-      Definition::DATA_REGION_ID, Definition::DATA_DATETIME,
-      Definition::DATA_TEMP, Definition::DATA_MAX_TEMP, Definition::DATA_MIN_TEMP,
-      $valuesListQuery
-    );
+    $df = $this->getDefinitionMap();
+    $query = 'INSERT IGNORE INTO %dataTable (
+      %regionIdColumn, %datetimeColumn, %tempColumn, %maxTempColumn, %minTempColumn)
+      VALUES %s
+    ';
+    $query = str_replace(array_keys($df), array_values($df), $query);
+    $query = sprintf($query, $valuesListQuery);
 
     $stmt = $this->pdo()->prepare($query);
     $stmt->execute();
@@ -68,7 +76,7 @@ class Gateway extends BaseGateway
     return $stmt->rowCount();
   }
 
-  private function prepareDataInsertValuesList(int $regionId, array $dataCollection)
+  private function prepareDataInsertValuesList(int $regionId, array $dataCollection) : string
   {
     $valuesListQuery = '';
     $valuesTpl = '(%d, %s, %s, %s, %s),';
@@ -82,14 +90,18 @@ class Gateway extends BaseGateway
     return substr($valuesListQuery, 0, -1);
   }
 
-  public function fetchReportData(array $criteria = [])
+  public function fetchReportData(array $criteria = []) : array
   {
-    $df = $this->getDefinitionMap();
+    return $this->fetchReport($this->buildReportDataQuery($criteria));
+  }
 
-    $query = 'SELECT data.%datetimeColumn, region.%countryColumn, region.%cityColumn, data.%tempColumn
-      FROM %regionTable region JOIN %dataTable data ON region.id = data.region_id';
-    $query = str_replace(array_keys($df), array_values($df), $query);
+  public function fetchReportAverageTemp(array $criteria)
+  {
+    return $this->fetchReport($this->buildAverageTempQuery($criteria));
+  }
 
+  private function fetchReport(string $query) : array
+  {
     $stmt = $this->pdo()->prepare($query);
     $isSuccess = $stmt->execute();
 
@@ -101,15 +113,60 @@ class Gateway extends BaseGateway
     return $result;
   }
 
+  private function buildReportDataQuery(array $criteria)
+  {
+    $df = $this->getDefinitionMap();
+
+    $query = 'SELECT %datetimeColumn, %countryColumn, %cityColumn, %tempColumn
+      FROM %regionTable JOIN %dataTable ON %idColumn = %regionIdColumn';
+    $query = str_replace(array_keys($df), array_values($df), $query);
+
+    $conditions = $this->criteriaQueryBuilder->buildQuery($criteria);
+    if ($conditions) $query .= ' WHERE '. $conditions;
+
+    return $query;
+  }
+
+  private function buildAverageTempQuery(array $criteria)
+  {
+    $df = $this->getDefinitionMap();
+
+    $query = 'SELECT %countryColumn, %cityColumn, AVG(%tempColumn) as average_temp
+      FROM %regionTable JOIN %dataTable ON %idColumn = %regionIdColumn
+      %s GROUP BY %countryColumn, %cityColumn
+    ';
+    $query = str_replace(array_keys($df), array_values($df), $query);
+
+    $conditions = $this->criteriaQueryBuilder->buildQuery($criteria);
+    if ($conditions) $query = sprintf($query, ' WHERE '.$conditions);
+    else $query = sprintf($query, '');
+
+    return $query;
+  }
+
+  public function fetchCountryList()
+  {
+    $df = $this->getDefinitionMap();
+    $query = 'SELECT %idColumn, %countryColumn, %cityColumn FROM %regionTable;';
+    $query = str_replace(array_keys($df), array_values($df), $query);
+
+    return $this->fetchReport($query);
+  }
+
   private function getDefinitionMap() : array
   {
     return [
       '%regionTable' => Definition::TABLE_REGION,
       '%dataTable' => Definition::TABLE_DATA,
-      '%datetimeColumn' => Definition::DATA_DATETIME,
+      '%idColumn' => Definition::REGION_ID,
+      '%timezoneColumn' => Definition::REGION_TIMEZONE,
       '%countryColumn' => Definition::REGION_COUNTRY,
       '%cityColumn' => Definition::REGION_CITY,
-      '%tempColumn' => Definition::DATA_TEMP
+      '%regionIdColumn' => Definition::DATA_REGION_ID,
+      '%datetimeColumn' => Definition::DATA_DATETIME,
+      '%tempColumn' => Definition::DATA_TEMP,
+      '%maxTempColumn' => Definition::DATA_MAX_TEMP,
+      '%minTempColumn' => Definition::DATA_MIN_TEMP
     ];
   }
 }

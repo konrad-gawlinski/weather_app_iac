@@ -41,12 +41,34 @@ services:
         class: App\Database\Gateway
         arguments:
             $pdo: '@databasePDO'
+        calls:
+            - [setCriteriaQueryBuilder, ['@App\Database\CriteriaQueryBuilder']]
 
-    App\Controller\WeatherReport:
+    httpRequest:
+        class: Symfony\Component\HttpFoundation\Request
+
+    App\Controller\Weather\GeneralReport:
         tags: ['controller.service_arguments']
         bind:
-            $request: '@request_stack'
-            $gateway: '@databaseGateway'
+            $request: '@httpRequest'
+        calls:
+            - [setDatabaseGateway, ['@databaseGateway']]
+            - [setRequestSanitizer, ['@App\Request\WeatherReportSanitizer']]
+            - [setUtils, ['@App\Request\WeatherReportUtils']]
+
+    App\Controller\Weather\AverageTempReport:
+        tags: ['controller.service_arguments']
+        bind:
+            $request: '@httpRequest'
+        calls:
+            - [setDatabaseGateway, ['@databaseGateway']]
+            - [setRequestSanitizer, ['@App\Request\WeatherReportSanitizer']]
+            - [setUtils, ['@App\Request\WeatherReportUtils']]
+
+    App\Controller\Weather\CountryList:
+        tags: ['controller.service_arguments']
+        calls:
+            - [setDatabaseGateway, ['@databaseGateway']]
 
 imports:
     - { resource: commands.yaml }

@@ -16,4 +16,9 @@ interface Definition
   const DATA_TEMP = 'temp';
   const DATA_MAX_TEMP = 'max_temp';
   const DATA_MIN_TEMP = 'min_temp';
+
+  const CRITERIA_START_DATE = 'start_date';
+  const CRITERIA_END_DATE = 'end_date';
+  const CRITERIA_CITY_ID = 'city_id';
+  const CRITERIA_TEMP = 'temp';
 }
