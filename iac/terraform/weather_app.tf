@@ -18,8 +18,13 @@ resource "docker_container" "weather_app" {
     host_path = "/var/weather_app"
     container_path = "/var/weather_app"
   }
+
   networks = ["${docker_network.private_network.id}"]
   command = ["supervisord", "-n"]
+
+  provisioner "local-exec" {
+    command = "docker exec -t working_weather_app /var/weather_app/bin/composer.phar --working-dir=/var/weather_app install"
+  }
 }
 
 resource "docker_container" "weather_app_database" {
