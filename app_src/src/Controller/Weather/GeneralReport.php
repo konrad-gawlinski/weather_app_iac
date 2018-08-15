@@ -30,7 +30,7 @@ class GeneralReport extends BaseReport
       Param::PARAM_START_DATE => Criteria::CRITERIA_START_DATE,
       Param::PARAM_END_DATE => Criteria::CRITERIA_END_DATE,
       Param::PARAM_TEMP => Criteria::CRITERIA_TEMP,
-      Param::PARAM_CITY_ID => Criteria::CRITERIA_CITY_ID,
+      Param::PARAM_CITY => Criteria::CRITERIA_CITY,
     ];
   }
 }

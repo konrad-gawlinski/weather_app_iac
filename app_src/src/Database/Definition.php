@@ -19,6 +19,6 @@ interface Definition
 
   const CRITERIA_START_DATE = 'start_date';
   const CRITERIA_END_DATE = 'end_date';
-  const CRITERIA_CITY_ID = 'city_id';
+  const CRITERIA_CITY = 'city';
   const CRITERIA_TEMP = 'temp';
 }

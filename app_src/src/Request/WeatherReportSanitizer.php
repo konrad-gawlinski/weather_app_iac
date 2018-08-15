@@ -17,7 +17,13 @@ class WeatherReportSanitizer
     $sanitizedParams = filter_var_array($params, [
       PARAM::PARAM_START_DATE => $dateFilter,
       PARAM::PARAM_END_DATE => $dateFilter,
-      PARAM::PARAM_CITY_ID => ['filter' => FILTER_VALIDATE_INT, 'options' => ['default']],
+      PARAM::PARAM_CITY => [
+        'filter' => FILTER_VALIDATE_REGEXP,
+        'options' => [
+          'default' => null,
+          'regexp' => '/[a-zA-Z\s]{2,}/'
+        ]
+      ],
       PARAM::PARAM_TEMP => [
         'filter' => FILTER_VALIDATE_REGEXP,
         'options' => [

@@ -20,8 +20,8 @@ class CriteriaQueryBuilder
     if (!isset($criteria[Criteria::CRITERIA_START_DATE]) && !isset($criteria[Criteria::CRITERIA_END_DATE]))
         $conditions[] = sprintf('%s > CURDATE() - INTERVAL 7 DAY', DB::DATA_DATETIME);
           
-    if (isset($criteria[Criteria::CRITERIA_CITY_ID]))
-      $conditions[] = sprintf('%s = %s', DB::REGION_CITY, $criteria[Criteria::CRITERIA_CITY_ID]);
+    if (isset($criteria[Criteria::CRITERIA_CITY]))
+      $conditions[] = sprintf('%s = \'%s\'', DB::REGION_CITY, $criteria[Criteria::CRITERIA_CITY]);
 
     if (isset($criteria[Criteria::CRITERIA_TEMP])) {
       $operator = substr($criteria[Criteria::CRITERIA_TEMP], 0, 2);
